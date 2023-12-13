@@ -20,6 +20,7 @@ def upload_audio(file):
     data = file.read()
     file_extension = file.name.split('.')[-1]
     if file_extension.lower() == 'mp3':
+        print("mp3です")
         wav_data = mp3_to_wav(data)
         audio_samples = note_seq.audio_io.wav_data_to_samples_librosa(wav_data, sample_rate=inference_model.SAMPLE_RATE)
     else:
@@ -27,8 +28,11 @@ def upload_audio(file):
     return audio_samples
 
 def mp3_to_wav(mp3_data):
-    audio = AudioSegment.from_mp3(io.BytesIO(mp3_data))
-    wav_data = audio.raw_data
+    temp_mp3_file = "/app/temp.mp3"
+    with open(temp_mp3_file, "wb") as f:
+        f.write(mp3_data)
+    audio = AudioSegment.from_mp3(temp_mp3_file)
+    wav_data = audio.export(format="wav").read()
     return wav_data
 
 if uploaded_file is not None:
@@ -49,4 +53,4 @@ if uploaded_file is not None:
     midi_filename = "/app/transcribed.mid"
     note_seq.sequence_proto_to_midi_file(est_ns, midi_filename)
     with open(midi_filename, 'rb') as f:
-        st.download_button("Download your transcription", f.read(), file_name="transcribed.mid", key="transcription")
+        st.download_button("Download MIDI file", f.read(), file_name="transcribed.mid", key="transcription")
