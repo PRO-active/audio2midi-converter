@@ -4,6 +4,7 @@ from inference_model import InferenceModel
 from pydub import AudioSegment
 import io
 
+st.title("Audio to MIDI Transcription with MT3")
 # Load MT3 model
 MODEL_OPTIONS = {"ピアノ採譜モデル": "ismir2021", "複数楽器採譜モデル": "mt3"}
 selected_model = st.selectbox("モデルを選択してください", list(MODEL_OPTIONS.keys()))
@@ -12,10 +13,8 @@ MODEL = MODEL_OPTIONS[selected_model]
 CHECKPOINT_PATH = f'/app/checkpoints/{MODEL}/'
 inference_model = InferenceModel(CHECKPOINT_PATH, MODEL)
 
-st.title("Audio to MIDI Transcription with MT3")
-
 # File upload
-uploaded_file = st.file_uploader("Choose an audio file", type=["wav", "mp3"])
+uploaded_file = st.file_uploader("音声ファイルのアップロード", type=["wav", "mp3"])
 
 def upload_audio(file):
     data = file.read()
@@ -30,7 +29,6 @@ def upload_audio(file):
 def mp3_to_wav(mp3_data):
     audio = AudioSegment.from_mp3(io.BytesIO(mp3_data))
     wav_data = audio.raw_data
-    # sample_rate = audio.frame_rate
     return wav_data
 
 if uploaded_file is not None:
@@ -38,7 +36,6 @@ if uploaded_file is not None:
 
     # Perform transcription
     with st.spinner('Transcribing...'):
-        # Perform transcription
         audio_samples = upload_audio(uploaded_file)
         est_ns = inference_model(audio_samples)
     print("Predicted MIDI Data:")
