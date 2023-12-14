@@ -61,6 +61,7 @@ if uploaded_file is not None:
     #     note_seq.sequence_proto_to_midi_file(est_ns, midi_filename)
     #     st.download_button("Download your transcription", midi_filename, file_name="transcribed.mid", key="transcription")
             midi_filename = "/app/transcribed.mid"
+            user_selected_filename = st.text_input("Enter MIDI file name:", value="transcribed.mid")
             note_seq.sequence_proto_to_midi_file(est_ns, midi_filename)
             with open(midi_filename, 'rb') as f:
                 st.download_button("Download MIDI file", f.read(), file_name="transcribed.mid", key="transcription")
