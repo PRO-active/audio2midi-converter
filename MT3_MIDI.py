@@ -6,12 +6,21 @@ import io
 
 st.title("Audio to MIDI Transcription with MT3")
 # Load MT3 model
-MODEL_OPTIONS = {"ピアノ採譜モデル": "ismir2021", "複数楽器採譜モデル": "mt3"}
-selected_model = st.selectbox("モデルを選択してください", list(MODEL_OPTIONS.keys()))
+MODEL_OPTIONS = ["---", "ピアノ採譜モデル", "複数楽器採譜モデル"]
+MODEL = st.selectbox("モデルを選択してください", MODEL_OPTIONS)
 
-MODEL = MODEL_OPTIONS[selected_model]
-CHECKPOINT_PATH = f'/app/checkpoints/{MODEL}/'
-inference_model = InferenceModel(CHECKPOINT_PATH, MODEL)
+# モデルの選択に基づいてInferenceModelを初期化
+if MODEL == "ピアノ採譜モデル":
+    MODEL_TYPE = "ismir2021"
+elif MODEL == "複数楽器採譜モデル":
+    MODEL_TYPE = "mt3"
+else:
+    MODEL_TYPE = None
+
+# モデルが選択されている場合のみモデルを初期化
+if MODEL_TYPE is not None:
+    CHECKPOINT_PATH = f'/app/checkpoints/{MODEL_TYPE}/'
+    inference_model = InferenceModel(CHECKPOINT_PATH, MODEL_TYPE)
 
 # File upload
 uploaded_file = st.file_uploader("音声ファイルのアップロード", type=["wav", "mp3"])
@@ -39,18 +48,17 @@ if uploaded_file is not None:
     st.audio(uploaded_file, format='audio/wav')
 
     # Perform transcription
-    with st.spinner('Transcribing...'):
-        audio_samples = upload_audio(uploaded_file)
-        est_ns = inference_model(audio_samples)
-    print("Predicted MIDI Data:")
-    print(est_ns.notes[-1])
+    if st.button("実行"):
+        with st.spinner('Transcribing...'):
+            audio_samples = upload_audio(uploaded_file)
+            est_ns = inference_model(audio_samples)
 
     # Download MIDI button
     # if st.button("Download MIDI Transcription"):
     #     midi_filename = "/app/transcribed.mid"
     #     note_seq.sequence_proto_to_midi_file(est_ns, midi_filename)
     #     st.download_button("Download your transcription", midi_filename, file_name="transcribed.mid", key="transcription")
-    midi_filename = "/app/transcribed.mid"
-    note_seq.sequence_proto_to_midi_file(est_ns, midi_filename)
-    with open(midi_filename, 'rb') as f:
-        st.download_button("Download MIDI file", f.read(), file_name="transcribed.mid", key="transcription")
+        midi_filename = "/app/transcribed.mid"
+        note_seq.sequence_proto_to_midi_file(est_ns, midi_filename)
+        with open(midi_filename, 'rb') as f:
+            st.download_button("Download MIDI file", f.read(), file_name="transcribed.mid", key="transcription")
