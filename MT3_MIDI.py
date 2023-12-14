@@ -16,6 +16,7 @@ elif MODEL == "複数楽器採譜モデル":
     MODEL_TYPE = "mt3"
 else:
     MODEL_TYPE = None
+    inference_model =None
 
 # モデルが選択されている場合のみモデルを初期化
 if MODEL_TYPE is not None:
@@ -48,17 +49,18 @@ if uploaded_file is not None:
     st.audio(uploaded_file, format='audio/wav')
 
     # Perform transcription
-    if st.button("実行"):
-        with st.spinner('Transcribing...'):
-            audio_samples = upload_audio(uploaded_file)
-            est_ns = inference_model(audio_samples)
+    if inference_model is not None:
+        if st.button("実行"):
+            with st.spinner('Transcribing...'):
+                audio_samples = upload_audio(uploaded_file)
+                est_ns = inference_model(audio_samples)
 
     # Download MIDI button
     # if st.button("Download MIDI Transcription"):
     #     midi_filename = "/app/transcribed.mid"
     #     note_seq.sequence_proto_to_midi_file(est_ns, midi_filename)
     #     st.download_button("Download your transcription", midi_filename, file_name="transcribed.mid", key="transcription")
-        midi_filename = "/app/transcribed.mid"
-        note_seq.sequence_proto_to_midi_file(est_ns, midi_filename)
-        with open(midi_filename, 'rb') as f:
-            st.download_button("Download MIDI file", f.read(), file_name="transcribed.mid", key="transcription")
+            midi_filename = "/app/transcribed.mid"
+            note_seq.sequence_proto_to_midi_file(est_ns, midi_filename)
+            with open(midi_filename, 'rb') as f:
+                st.download_button("Download MIDI file", f.read(), file_name="transcribed.mid", key="transcription")
